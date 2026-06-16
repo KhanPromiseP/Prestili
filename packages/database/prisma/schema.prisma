@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  projects      Project[]
+  subscriptions Subscription[]
+  sessions      Session[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  presentations Presentation[]
+  
+  @@index([userId])
+}
+
+model Presentation {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  
+  // Core document stored as JSONB
+  document    Json
+  
+  // Metadata for querying
+  slideCount  Int      @default(0)
+  version     Int      @default(1)
+  
+  // Design system
+  designSystem Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  versions    PresentationVersion[]
+  shares      Share[]
+  
+  @@index([projectId])
+}
+
+model PresentationVersion {
+  id             String   @id @default(cuid())
+  presentationId String
+  presentation   Presentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  
+  document       Json
+  version        Int
+  changeLog      String?
+  createdAt      DateTime @default(now())
+  
+  @@index([presentationId])
+}
+
+model Share {
+  id             String   @id @default(cuid())
+  presentationId String
+  presentation   Presentation @relation(fields: [presentationId], references: [id], onDelete: Cascade)
+  
+  token          String   @unique
+  permissions    Json
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+  
+  @@index([presentationId])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan      String
+  status    String
+  
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sessionToken String   @unique
+  expires      DateTime
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  type        String
+  
+  // Storage metadata
+  storageKey  String   @unique
+  storageUrl  String
+  size        Int
+  mimeType    String
+  
+  // Asset metadata
+  metadata    Json?
+  tags        String[]
+  
+  // Source tracking
+  source      String?
+  sourceId    String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([tags])
+}

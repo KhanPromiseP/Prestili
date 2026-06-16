@@ -1,0 +1,25 @@
+{
+  "name": "@prestili/canvas",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "konva": "^9.2.0",
+    "react-konva": "^18.2.10",
+    "@prestili/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
